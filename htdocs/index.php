@@ -43,7 +43,7 @@ try {
     }
 
     // 计算总记录数
-    $countQuery = "SELECT COUNT(*) as total FROM dramas $whereClause";
+    $countQuery = "SELECT COUNT(*) as total FROM dramas $whereClause ORDER BY published_at DESC";
     $countStmt = $conn->prepare($countQuery);
     if (!empty($params)) {
         $countStmt->execute($params);
@@ -55,8 +55,8 @@ try {
     // 计算总页数
     $totalPages = ceil($totalRecords / $recordsPerPage);
 
-    // 获取当前页的数据
-    $query = "SELECT name, link FROM dramas $whereClause LIMIT :offset, :limit";
+    // 获取当前页的数据，添加 published_at 字段到查询中，并按发布时间降序排序
+    $query = "SELECT name, link, published_at FROM dramas $whereClause ORDER BY published_at DESC LIMIT :offset, :limit";
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->bindParam(':limit', $recordsPerPage, PDO::PARAM_INT);
@@ -120,6 +120,9 @@ try {
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider md:block hidden">
                                 链接
                             </th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                发布时间
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -134,6 +137,15 @@ try {
                                     <a href="<?php echo htmlspecialchars($drama['link']); ?>" class="text-blue-600 hover:underline">
                                         <?php echo htmlspecialchars($drama['link']); ?>
                                     </a>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <?php
+                                    if ($drama['published_at']) {
+                                        echo htmlspecialchars(date('Y-m-d', strtotime($drama['published_at'])));
+                                    } else {
+                                        echo '无';
+                                    }
+                                    ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -175,4 +187,4 @@ try {
     <?php include 'public/includes/footer.php'; ?>
 </body>
 
-</html>
+</html>    
